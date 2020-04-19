@@ -1,4 +1,5 @@
 import os
+import shutil
 
 
 class FileUtil:
@@ -16,6 +17,18 @@ class FileUtil:
         with open(output_path, open_type) as fp:
             fp.write(result_content)
 
+    @staticmethod
+    def exists(path):
+        return os.path.exists(path)
+
+    @staticmethod
+    def delete(path):
+        if not os.path.exists(path):
+            return
+        if os.path.isdir(path):
+            return shutil.rmtree(path)
+        return os.remove(path)
+
     # noinspection PyBroadException
     @staticmethod
     def copy_file(src, dest, overwrite=False):
@@ -24,7 +37,7 @@ class FileUtil:
             return False
 
         if os.path.isfile(dest) and not overwrite:
-            print("复制文件失败！目标文件: %s 已存在！") % dest
+            print("复制文件失败！目标文件: %s 已存在！" % dest)
             return False
 
         dest_dir = dest if os.path.isdir(dest) else os.path.dirname(dest)

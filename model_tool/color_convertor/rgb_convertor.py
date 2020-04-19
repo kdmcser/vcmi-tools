@@ -1,5 +1,8 @@
 import cv2
 from abc import ABC, abstractmethod
+
+import numpy
+
 from color_convertor.convertor_base import ConvertorBase
 
 
@@ -8,14 +11,14 @@ class RGBConvertor(ConvertorBase, ABC):
 
     def convert(self, input_image, config):
         rgb_image = cv2.cvtColor(input_image, cv2.COLOR_BGR2RGB)
-        convert_image = [self.convert_pix(pix, config) if not self.is_reserve_color(pix) else pix
-                         for row in rgb_image for pix in row]
-        convert_image = cv2.cvtColor(input_image, cv2.COLOR_RGB2BGR)
+        convert_image = numpy.array([self.convert_pix(pix, config) if not self.is_reserve_color(pix) else pix
+                                     for row in rgb_image for pix in row]).reshape(input_image.shape)
+        convert_image = cv2.cvtColor(convert_image, cv2.COLOR_RGB2BGR)
         return convert_image
 
     @staticmethod
     def is_reserve_color(pix):
-        if pix.to_list() in RGBConvertor.RESERVE_LIST:
+        if pix.tolist() in RGBConvertor.RESERVE_LIST:
             return True
         return False
 

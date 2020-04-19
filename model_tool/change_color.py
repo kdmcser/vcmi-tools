@@ -18,6 +18,8 @@ def create_arg_parser():
     parser = ArgumentParser(usage=usage, description=description)
     parser.add_argument("-i", "--input_dir", dest="input_dir", help="输入目录")
     parser.add_argument("-o", "--output_dir", dest="output_dir", help="输出目录")
+    parser.add_argument("-f", "--overwrite", dest="overwrite", action="store_true", default=False,
+                        help="如果输出文件存在，是否强制覆盖，默认为否")
     parser.add_argument("-m", "--method", dest="method", help='''颜色转换方式：
     rgb_add - 加固定rgb分量到原始颜色中，需要配置-r -g -b
     rgb_mix - 混合固定rgb颜色到原始颜色中, 需要配置-r -g -b [-s -d]
@@ -37,7 +39,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     config = Config()
     if not config.load_from_args(args):
-        parser.print_help()
+        parser.print_usage()
         sys.exit(1)
 
     processor = ImagesColorProcessor()

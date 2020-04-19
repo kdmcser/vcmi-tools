@@ -7,18 +7,21 @@ from file_util import FileUtil
 
 
 class ImagesColorProcessor(object):
+    EXCLUDE_DIR = {"shadow"}
     @staticmethod
     def process(config):
         all_files = FileUtil.list_all_subfiles(config.input_dir)
         for file in all_files:
             file_type = os.path.splitext(file)[1].lower()
-            if ImagesColorProcessor.is_supported_image_file(file_type):
+            if ImagesColorProcessor.need_process(file, file_type):
                 if not ImagesColorProcessor.process_image_file(config, file):
                     return False
+                print("%s 文件颜色处理成功！" % file)
             else:
                 if not ImagesColorProcessor.process_normal_file(config, file):
                     return False
-            print("%s 文件处理成功！" % file)
+                print("%s 文件拷贝成功，未进行颜色处理！" % file)
+
         return True
 
     @staticmethod
@@ -27,8 +30,14 @@ class ImagesColorProcessor(object):
         return os.path.join(output_dir, relative_path)
 
     @staticmethod
-    def is_supported_image_file(file_type):
-        return file_type in {"bmp", "jpg", "jpeg", "pcx", "png"}
+    def need_process(file_name, file_type):
+        dir_name = os.path.dirname(file_name)
+        path_splits = dir_name.replace("/", os.path.sep).split(os.path.sep)
+        for path in path_splits:
+            if path.lower() in ImagesColorProcessor.EXCLUDE_DIR:
+                return False
+        file_type = file_type[1:] if file_type.startswith(".") else file_type
+        return file_type.lower() in {"bmp", "jpg", "jpeg", "pcx", "png"}
 
     @staticmethod
     def process_image_file(config, file):
@@ -37,10 +46,14 @@ class ImagesColorProcessor(object):
             print("读取图片：%s失败！") % file
             return False
         convertor = ColorConvertorFactory.create_color_convertor(config.method)
-        output_image = convertor.convert(image)
+        if convertor is None:
+            return False
+        output_image = convertor.convert(image, config)
         if output_image is None:
             return False
         output_path = ImagesColorProcessor.get_output_path(file, config.input_dir, config.output_dir)
+        if config.overwrite and FileUtil.exists(output_path):
+            FileUtil.delete(output_path)
         if not cv2.imwrite(output_path, output_image):
             print("输出图片到：%s失败！") % output_path
             return False
@@ -49,7 +62,7 @@ class ImagesColorProcessor(object):
     @staticmethod
     def process_normal_file(config, file):
         output_path = ImagesColorProcessor.get_output_path(file, config.input_dir, config.output_dir)
-        return FileUtil.copy_file(file, output_path)
+        return FileUtil.copy_file(file, output_path, config.overwrite)
 
 
 
