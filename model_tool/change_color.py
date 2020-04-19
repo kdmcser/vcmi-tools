@@ -1,6 +1,7 @@
 import sys
 from argparse import ArgumentParser
 from config import Config
+from images_color_processor import ImagesColorProcessor
 
 
 def create_arg_parser():
@@ -38,3 +39,8 @@ if __name__ == "__main__":
     if not config.load_from_args(args):
         parser.print_help()
         sys.exit(1)
+
+    processor = ImagesColorProcessor()
+    if not processor.process(config):
+        sys.exit(1)
+    pass

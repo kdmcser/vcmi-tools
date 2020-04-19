@@ -1,3 +1,30 @@
+class Property(object):
+    def __init__(self, input_str=None):
+        if input_str is None:
+            self.red = self.green = self.blue = 0.0
+            return
+
+        property_list = [float(str(x).strip()) for x in str(input_str).split(",")]
+        if len(property_list) == 1:
+            self.red = self.green = self.blue = property_list[0]
+        elif len(property_list) == 3:
+            self.red, self.green, self.blue = property_list
+        else:
+            raise Exception("Unsupport property %s" % input_str)
+        pass
+
+    def get_opposite(self):
+        opposite_property = Property()
+        opposite_property.red = 1.0 - self.red
+        opposite_property.green = 1.0 - self.green
+        opposite_property.blue = 1.0 - self.blue
+        return opposite_property
+
+    def __str__(self):
+        return ", ".join([self.red, self.green, self.blue])
+    pass
+
+
 class Config(object):
     def __init__(self):
         self.input_dir = ""
@@ -6,8 +33,8 @@ class Config(object):
         self.red = 0
         self.green = 0
         self.blue = 0
-        self.src_property = 0.0
-        self.dest_property = 0.0
+        self.src_property = Property()
+        self.dest_property = Property()
         pass
 
     def load_from_args(self, args):
@@ -39,11 +66,11 @@ class Config(object):
             except:
                 print("参数：%s，值：%s 非法，需要整数" % (name, value))
                 return False
-        elif isinstance(initial_value, float):
+        elif isinstance(initial_value, Property):
             try:
-                value = float(value)
+                value = Property(value)
             except:
-                print("参数：%s，值：%s 非法，需要浮点数" % (name, value))
+                print("参数：%s，值：%s 非法，需要浮点数或逗号分隔的三个浮点数" % (name, value))
                 return False
         elif isinstance(initial_value, str):
             pass
@@ -61,17 +88,17 @@ class Config(object):
 
     def check_and_get_property_args(self, src_property, dest_property):
         if src_property is None and dest_property is None:
-            self.src_property = self.dest_property = 0.5
-            print("设置原始颜色比例和混合颜色比例默认值为0.5（如果不是rgb_mix模式将不会用到）")
+            self.src_property = self.dest_property = Property(0.5)
+            print("设置原始颜色比例和混合颜色比例默认值为0.5, 0.5, 0.5（如果不是rgb_mix模式将不会用到）")
         elif src_property is None:
             if not self.set_and_convert_field("dest_property", dest_property):
                 return False
-            self.src_property = 1.0 - self.dest_property
+            self.src_property = self.dest_property.get_opposite()
             print("设置原始颜色比例默认值为%s（如果不是rgb_mix模式将不会用到）" % self.src_property)
         elif dest_property is None:
             if not self.set_and_convert_field("src_property", src_property):
                 return False
-            self.dest_property = 1.0 - self.src_property
+            self.dest_property = self.src_property.get_opposite()
             print("设置混合颜色比例默认值为%s（如果不是rgb_mix模式将不会用到）" % self.dest_property)
         return True
 
