@@ -6,8 +6,8 @@ import numpy
 from color_convertor.convertor_base import ConvertorBase
 from config import DEF_TOOL
 
-DEF_TOOl_RESERVE_COLORS = {[0, 255, 255]}
-DEF_MAKER_RESERVE_COLORS = {[0, 255, 255], [255, 0, 255], [255, 150, 255], [255, 255, 0]}
+DEF_TOOl_RESERVE_COLORS = ([0, 255, 255],)
+DEF_MAKER_RESERVE_COLORS = ([0, 255, 255], [255, 0, 255], [255, 150, 255], [255, 255, 0])
 
 
 class RGBConvertor(ConvertorBase, ABC):

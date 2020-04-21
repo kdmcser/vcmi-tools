@@ -43,7 +43,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     config = Config()
     if not config.load_from_args(args):
-        parser.print_usage()
+        parser.print_help()
         sys.exit(1)
 
     processor = ImagesColorProcessor()
