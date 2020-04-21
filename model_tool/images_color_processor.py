@@ -1,6 +1,8 @@
 import os
+import random
 
 import cv2
+import numpy
 
 from color_convertor.color_convertor_factory import ColorConvertorFactory
 from file_util import FileUtil
@@ -63,6 +65,35 @@ class ImagesColorProcessor(object):
     def process_normal_file(config, file):
         output_path = ImagesColorProcessor.get_output_path(file, config.input_dir, config.output_dir)
         return FileUtil.copy_file(file, output_path, config.overwrite)
+
+    @staticmethod
+    def dry_run(config):
+        all_files = FileUtil.list_all_subfiles(config.input_dir)
+        all_images = [file for file in all_files
+                      if ImagesColorProcessor.need_process(file, os.path.splitext(file)[1].lower())]
+        if len(all_images) == 0:
+            print("目录中无图像，无法试运行！")
+            return False
+        index = random.randint(0, len(all_images) - 1)
+        file = all_images[index]
+        return ImagesColorProcessor.process_and_compair_image(config, file)
+
+    @staticmethod
+    def process_and_compair_image(config, file):
+        image = cv2.imread(file)
+        if image is None:
+            print("读取图片：%s失败！") % file
+            return False
+        convertor = ColorConvertorFactory.create_color_convertor(config.method)
+        if convertor is None:
+            return False
+        output_image = convertor.convert(image, config)
+        if output_image is None:
+            return False
+        show_image = numpy.concatenate((image, output_image), axis=1)
+        cv2.imshow("Convert Result", show_image)
+        cv2.waitKey(0)
+        return True
 
 
 

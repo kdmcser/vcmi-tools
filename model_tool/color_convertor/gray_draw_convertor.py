@@ -8,7 +8,7 @@ from color_convertor.rgb_convertor import RGBConvertor
 class GrayDrawConvertor(RGBConvertor, ABC):
     def convert_pix(self, pix, config):
         red, green, blue = pix
-        gray = (red + green + blue) // 3
+        gray = (int(red) + int(green) + int(blue)) // 3
         new_red = int(gray / 255.0 * config.red)
         new_green = int(gray / 255.0 * config.green)
         new_blue = int(gray / 255.0 * config.blue)

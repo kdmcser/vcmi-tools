@@ -3,13 +3,16 @@ RGB_MIX = "rgb_mix"
 GRAY_DRAW = "gray_draw"
 SUPPORTED_METHODS = {RGB_ADD, RGB_MIX, GRAY_DRAW}
 
+DEF_MAKER = "def_maker"
+DEF_TOOL = "def_tool"
+SUPPORTED_FORMATS = {DEF_MAKER, DEF_TOOL}
 
 class Property(object):
     def __init__(self, input_str=None):
         if input_str is None:
             self.red = self.green = self.blue = 0.0
             return
-
+        input_str = str(input_str).replace("\\-", "-")
         property_list = [float(str(x).strip()) for x in str(input_str).split(",")]
         if len(property_list) == 1:
             self.red = self.green = self.blue = property_list[0]
@@ -43,10 +46,11 @@ class Config(object):
         self.blue = 0
         self.src_property = Property()
         self.dest_property = Property()
+        self.format = ""
         pass
 
     def load_from_args(self, args):
-        for necessary_arg in ["input_dir", "output_dir", "method", "red", "green", "blue"]:
+        for necessary_arg in ["input_dir", "output_dir", "method", "red", "green", "blue", "format"]:
             arg_value = args.__dict__.get(necessary_arg)
             if not arg_value or not arg_value.strip():
                 print("缺少必要参数：%s" % necessary_arg)
@@ -64,6 +68,11 @@ class Config(object):
             allow_negetive = method == RGB_ADD
             if not self.is_valid_color(color_arg, allow_negetive):
                 return False
+
+        fmt = args.__dict__.get("format").lower()
+        if fmt not in SUPPORTED_FORMATS:
+            print("未知的format参数：%s， 目前只支持 %s" % (fmt, "/".join(SUPPORTED_FORMATS)))
+            return False
 
         if method == RGB_MIX:
             if not self.check_and_get_property_args(args.src_property, args.dest_property):
@@ -93,6 +102,7 @@ class Config(object):
             pass
         else:
             print("内部错误：无法识别的参数：%s。类型：%s" % (name, type(initial_value)))
+            return False
         self.__dict__[name] = value
         return True
 
